@@ -1,17 +1,7 @@
 "use client";
 
 import Card from "@/components/ui/Card";
-
-type Expense = {
-  amount: number;
-  category: string;
-};
-
-type Goal = {
-  title: string;
-  current: number;
-  target: number;
-};
+import { Expense, Goal } from "@/types";
 
 type Props = {
   income: number;
@@ -20,149 +10,141 @@ type Props = {
 };
 
 export default function FinancialInsight({
-
   income,
-
   expenses,
-
   goal,
-
 }: Props) {
 
-  const totalExpense =
-    expenses.reduce(
-      (t, e) => t + e.amount,
-      0
-    );
+  const totalExpense = expenses.reduce(
+    (t, e) => t + e.amount,
+    0
+  );
 
   const balance =
     income - totalExpense;
 
-  const savingRate =
-    income
-      ? Math.round(
-          (balance / income) * 100
+  const expenseRate =
+    income === 0
+      ? 0
+      : Math.round(
+          (totalExpense / income) * 100
+        );
+
+  let title = "Excellent 🎉";
+  let message =
+    "Keuangan kamu masih sangat sehat.";
+
+  if (expenseRate >= 80) {
+    title = "Warning ⚠️";
+    message =
+      "Pengeluaran sudah melewati 80% dari pemasukan bulan ini.";
+  } else if (expenseRate >= 60) {
+    title = "Be Careful 🙂";
+    message =
+      "Pengeluaran mulai meningkat, coba kurangi pengeluaran yang tidak penting.";
+  } else if (expenseRate >= 40) {
+    title = "Good 👍";
+    message =
+      "Keuangan masih aman, tetap pertahankan kebiasaan menabung.";
+  }
+
+  const goalLeft =
+    goal
+      ? Math.max(
+          goal.target - goal.current,
+          0
         )
       : 0;
 
-  const categoryMap =
-    expenses.reduce((acc, e) => {
-
-      acc[e.category] =
-        (acc[e.category] ?? 0)
-        + e.amount;
-
-      return acc;
-
-    }, {} as Record<string, number>);
-
-  const topCategory =
-    Object.entries(categoryMap)
-      .sort(
-        (a, b) =>
-          b[1] - a[1]
-      )[0];
-
   return (
-
     <Card>
 
       <h2 className="text-2xl font-black">
 
-        🧠 Financial Insight
+        💡 Financial Insight
 
       </h2>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-6 space-y-4">
 
         <div className="rounded-2xl bg-green-50 p-4">
 
-          <p className="text-sm text-slate-500">
+          <h3 className="font-bold text-green-700">
+            {title}
+          </h3>
 
-            Saving Rate
-
-          </p>
-
-          <h2 className="mt-2 text-4xl font-black text-green-600">
-
-            {savingRate}%
-
-          </h2>
-
-        </div>
-
-        <div className="rounded-2xl bg-slate-100 p-4">
-
-          <p className="font-semibold">
-
-            Highest Spending
-
-          </p>
-
-          <p className="mt-2 text-xl">
-
-            {topCategory
-              ? topCategory[0]
-              : "-"}
-
+          <p className="mt-2 text-sm text-slate-600">
+            {message}
           </p>
 
         </div>
 
-        {goal && (
+        <div className="space-y-3">
 
-          <div className="rounded-2xl bg-yellow-50 p-4">
+          <div className="flex justify-between">
 
-            <p className="font-semibold">
+            <span>Income</span>
 
-              Goal Progress
-
-            </p>
-
-            <p className="mt-2">
-
+            <span className="font-bold">
               Rp{" "}
-
-              {goal.current.toLocaleString("id-ID")}
-
-              {" / "}
-
-              Rp{" "}
-
-              {goal.target.toLocaleString("id-ID")}
-
-            </p>
+              {income.toLocaleString("id-ID")}
+            </span>
 
           </div>
 
-        )}
+          <div className="flex justify-between">
 
-        <div className="rounded-2xl bg-blue-50 p-4">
+            <span>Expense</span>
 
-          <p className="font-semibold">
+            <span className="font-bold text-red-600">
+              Rp{" "}
+              {totalExpense.toLocaleString("id-ID")}
+            </span>
 
-            Recommendation
+          </div>
 
-          </p>
+          <div className="flex justify-between">
 
-          <p className="mt-2 text-slate-600 leading-7">
+            <span>Remaining</span>
 
-            {savingRate >= 70
-              ? "Excellent! Continue maintaining your saving habit."
+            <span className="font-bold text-green-600">
+              Rp{" "}
+              {balance.toLocaleString("id-ID")}
+            </span>
 
-              : savingRate >= 50
-              ? "Your financial condition is healthy. Keep your expenses under control."
+          </div>
 
-              : "Your expenses are getting high. Try reducing spending in your biggest category."}
+          <div className="flex justify-between">
 
-          </p>
+            <span>Expense Rate</span>
+
+            <span className="font-bold">
+              {expenseRate}%
+            </span>
+
+          </div>
+
+          {goal && (
+            <div className="flex justify-between">
+
+              <span>
+                Australia Goal Left
+              </span>
+
+              <span className="font-bold text-blue-600">
+                Rp{" "}
+                {goalLeft.toLocaleString(
+                  "id-ID"
+                )}
+              </span>
+
+            </div>
+          )}
 
         </div>
 
       </div>
 
     </Card>
-
   );
-
 }

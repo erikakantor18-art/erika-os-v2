@@ -9,6 +9,7 @@ import Card from "@/components/ui/Card";
 import CircleProgress from "@/components/ui/CircleProgress";
 
 import ExpenseOverview from "@/components/dashboard/ExpenseOverview";
+import ExpenseCategory from "@/components/dashboard/ExpenseCategory";
 import MonthlyTrend from "@/components/dashboard/MonthlyTrend";
 import RecentExpense from "@/components/dashboard/RecentExpense";
 import StudyOverview from "@/components/dashboard/StudyOverview";
@@ -80,7 +81,7 @@ export default function Dashboard() {
 
         <HeroBanner />
 
-        {/* Summary Card */}
+        {/* Summary */}
 
         <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
 
@@ -127,6 +128,10 @@ export default function Dashboard() {
           <div className="space-y-6 xl:col-span-2">
 
             <ExpenseOverview
+              expenses={expenses}
+            />
+
+            <ExpenseCategory
               expenses={expenses}
             />
 

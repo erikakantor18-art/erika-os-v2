@@ -1,11 +1,7 @@
 "use client";
 
 import Card from "@/components/ui/Card";
-
-type Expense = {
-  amount: number;
-  category: string;
-};
+import { Expense } from "@/types";
 
 type Props = {
   income: number;
@@ -13,11 +9,8 @@ type Props = {
 };
 
 export default function AnalyticsCard({
-
   income,
-
   expenses,
-
 }: Props) {
 
   const totalExpense =
@@ -26,121 +19,110 @@ export default function AnalyticsCard({
       0
     );
 
-  const balance =
+  const saving =
     income - totalExpense;
 
   const savingRate =
-    income > 0
-      ? Math.round(
-          (balance / income) * 100
-        )
-      : 0;
+    income === 0
+      ? 0
+      : Math.round(
+          (saving / income) * 100
+        );
 
-  const categoryMap =
-    expenses.reduce((acc, expense) => {
+  const averageExpense =
+    expenses.length === 0
+      ? 0
+      : Math.round(
+          totalExpense /
+            expenses.length
+        );
 
-      acc[expense.category] =
-        (acc[expense.category] ?? 0)
-        + expense.amount;
-
-      return acc;
-
-    }, {} as Record<string, number>);
-
-  const topCategory =
-    Object.entries(categoryMap)
-      .sort(
-        (a, b) =>
-          b[1] - a[1]
-      )[0];
+  const biggestExpense =
+    expenses.length === 0
+      ? 0
+      : Math.max(
+          ...expenses.map(
+            (e) => e.amount
+          )
+        );
 
   return (
 
     <Card>
 
-      <h2 className="text-2xl font-bold">
+      <h2 className="text-2xl font-black">
 
         📊 Analytics
 
       </h2>
 
-      <div className="mt-6 grid gap-4">
+      <div className="mt-8 space-y-5">
 
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between rounded-2xl bg-green-50 p-4">
 
-          <span>Income</span>
+          <span>
 
-          <strong>
+            Saving Rate
 
-            Rp{" "}
+          </span>
 
-            {income.toLocaleString("id-ID")}
-
-          </strong>
-
-        </div>
-
-        <div className="flex justify-between">
-
-          <span>Expense</span>
-
-          <strong className="text-red-500">
-
-            Rp{" "}
-
-            {totalExpense.toLocaleString("id-ID")}
-
-          </strong>
-
-        </div>
-
-        <div className="flex justify-between">
-
-          <span>Balance</span>
-
-          <strong className="text-green-600">
-
-            Rp{" "}
-
-            {balance.toLocaleString("id-ID")}
-
-          </strong>
-
-        </div>
-
-        <div className="flex justify-between">
-
-          <span>Saving Rate</span>
-
-          <strong>
+          <span className="text-xl font-black text-green-600">
 
             {savingRate}%
 
-          </strong>
+          </span>
 
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between rounded-2xl bg-blue-50 p-4">
 
-          <span>Top Category</span>
+          <span>
 
-          <strong>
+            Avg Expense
 
-            {topCategory?.[0] ?? "-"}
+          </span>
 
-          </strong>
+          <span className="font-bold">
+
+            Rp{" "}
+
+            {averageExpense.toLocaleString("id-ID")}
+
+          </span>
 
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between rounded-2xl bg-red-50 p-4">
 
-          <span>Transactions</span>
+          <span>
 
-          <strong>
+            Biggest Expense
+
+          </span>
+
+          <span className="font-bold">
+
+            Rp{" "}
+
+            {biggestExpense.toLocaleString("id-ID")}
+
+          </span>
+
+        </div>
+
+        <div className="flex items-center justify-between rounded-2xl bg-yellow-50 p-4">
+
+          <span>
+
+            Transactions
+
+          </span>
+
+          <span className="font-bold">
 
             {expenses.length}
 
-          </strong>
+          </span>
 
         </div>
 
