@@ -1,39 +1,92 @@
-type ButtonProps = {
-  children: React.ReactNode;
+"use client";
+
+import { ReactNode } from "react";
+
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "ghost"
+  | "outline"
+  | "danger"
+  | "success";
+
+interface Props {
+  children: ReactNode;
   onClick?: () => void;
+  type?: "button" | "submit" | "reset";
+  variant?: ButtonVariant;
   className?: string;
   disabled?: boolean;
-  type?: "button" | "submit" | "reset";
-};
+
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+}
 
 export default function Button({
   children,
   onClick,
+  type = "button",
+  variant = "primary",
   className = "",
   disabled = false,
-  type = "button",
-}: ButtonProps) {
+  leftIcon,
+  rightIcon,
+}: Props) {
+  const styles: Record<ButtonVariant, string> = {
+    primary:
+      "bg-black text-white hover:bg-neutral-800",
+
+    secondary:
+      "bg-gray-100 text-gray-900 hover:bg-gray-200",
+
+    ghost:
+      "bg-transparent text-gray-700 hover:bg-gray-100",
+
+    outline:
+      "border border-gray-300 bg-white text-gray-900 hover:bg-gray-50",
+
+    danger:
+      "bg-red-500 text-white hover:bg-red-600",
+
+    success:
+      "bg-emerald-500 text-white hover:bg-emerald-600",
+  };
+
   return (
     <button
       type={type}
       onClick={onClick}
       disabled={disabled}
       className={`
-        rounded-2xl
-        bg-green-600
-        px-6
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        rounded-xl
+        px-5
         py-3
         font-semibold
-        text-white
         transition-all
-        duration-300
-        hover:bg-green-700
+        duration-200
         disabled:cursor-not-allowed
         disabled:opacity-50
+        ${styles[variant]}
         ${className}
       `}
     >
-      {children}
+      {leftIcon && (
+        <span className="flex items-center">
+          {leftIcon}
+        </span>
+      )}
+
+      <span>{children}</span>
+
+      {rightIcon && (
+        <span className="flex items-center">
+          {rightIcon}
+        </span>
+      )}
     </button>
   );
 }

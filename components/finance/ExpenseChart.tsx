@@ -1,117 +1,19 @@
-"use client";
-
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-import { Doughnut } from "react-chartjs-2";
-
 import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend
-);
-
-type Expense = {
-  name: string;
-  amount: number;
-  category: string;
+type ExpenseChartProps = {
+  data: {
+    label: string;
+    value: number;
+  }[];
 };
-
-type Props = {
-  expenses: Expense[];
-};
-
-const colors = [
-  "#22c55e",
-  "#3b82f6",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-];
 
 export default function ExpenseChart({
-  expenses,
-}: Props) {
-
-  const categoryTotals: Record<
-    string,
-    number
-  > = {};
-
-  expenses.forEach((expense) => {
-
-    categoryTotals[expense.category] =
-      (categoryTotals[
-        expense.category
-      ] || 0) +
-      expense.amount;
-
-  });
-
-  const total =
-    Object.values(
-      categoryTotals
-    ).reduce(
-      (a, b) => a + b,
-      0
-    );
-
-  const data = {
-
-    labels:
-      Object.keys(categoryTotals),
-
-    datasets: [
-
-      {
-
-        data:
-          Object.values(
-            categoryTotals
-          ),
-
-        backgroundColor:
-          colors,
-
-        borderWidth: 0,
-
-        hoverOffset: 15,
-
-      },
-
-    ],
-
-  };
-
-  const options = {
-
-    plugins: {
-
-      legend: {
-
-        display: false,
-
-      },
-
-    },
-
-    cutout: "72%",
-
-    responsive: true,
-
-    maintainAspectRatio: false,
-
-  };
+  data,
+}: ExpenseChartProps) {
+  const max = Math.max(...data.map((d) => d.value), 1);
 
   return (
-
     <Card>
 
       <div className="flex items-center justify-between">
@@ -119,132 +21,51 @@ export default function ExpenseChart({
         <div>
 
           <h2 className="text-2xl font-bold">
-
-            📊 Expense Analysis
-
+            Monthly Expenses
           </h2>
 
-          <p className="text-slate-500">
-
-            Spending by category
-
+          <p className="mt-1 text-slate-500">
+            Expense overview this month
           </p>
 
         </div>
 
-        <div className="rounded-2xl bg-green-50 px-4 py-2">
-
-          <p className="text-xs text-slate-500">
-
-            Total
-
-          </p>
-
-          <h3 className="font-bold text-green-600">
-
-            Rp {total.toLocaleString("id-ID")}
-
-          </h3>
-
-        </div>
+        <Badge color="blue">
+          July
+        </Badge>
 
       </div>
 
-      {total === 0 ? (
+      <div className="mt-10 flex h-72 items-end gap-4">
 
-        <div className="flex h-80 items-center justify-center text-slate-400">
+        {data.map((item) => (
 
-          No expense yet
+          <div
+            key={item.label}
+            className="flex flex-1 flex-col items-center"
+          >
 
-        </div>
-
-      ) : (
-
-        <>
-
-          <div className="mx-auto mt-8 h-72 w-72">
-
-            <Doughnut
-              data={data}
-              options={options}
+            <div
+              className="w-full rounded-2xl bg-gradient-to-t from-emerald-500 to-green-300 transition-all duration-500 hover:opacity-80"
+              style={{
+                height: `${(item.value / max) * 100}%`,
+              }}
             />
 
-          </div>
+            <span className="mt-3 text-sm text-slate-500">
+              {item.label}
+            </span>
 
-          <div className="mt-8 space-y-4">
-
-            {Object.entries(
-              categoryTotals
-            ).map(
-              (
-                [category, amount],
-                index
-              ) => (
-
-                <div
-                  key={category}
-                  className="flex items-center justify-between rounded-2xl border border-slate-100 p-4"
-                >
-
-                  <div className="flex items-center gap-3">
-
-                    <div
-                      className="h-4 w-4 rounded-full"
-                      style={{
-                        backgroundColor:
-                          colors[
-                            index %
-                              colors.length
-                          ],
-                      }}
-                    />
-
-                    <span className="font-medium">
-
-                      {category}
-
-                    </span>
-
-                  </div>
-
-                  <div className="text-right">
-
-                    <p className="font-bold">
-
-                      Rp{" "}
-
-                      {amount.toLocaleString(
-                        "id-ID"
-                      )}
-
-                    </p>
-
-                    <p className="text-xs text-slate-400">
-
-                      {(
-                        (amount /
-                          total) *
-                        100
-                      ).toFixed(1)}
-                      %
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-              )
-            )}
+            <span className="mt-1 text-xs text-slate-400">
+              Rp {(item.value / 1000).toFixed(0)}K
+            </span>
 
           </div>
 
-        </>
+        ))}
 
-      )}
+      </div>
 
     </Card>
-
   );
-
 }

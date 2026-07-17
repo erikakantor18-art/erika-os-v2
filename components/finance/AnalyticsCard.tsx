@@ -1,129 +1,84 @@
-import Card from "@/components/ui/Card";
-import { formatCurrency } from "@/utils";
-import Button from "@/components/ui/Button";
-import { exportExpenseToExcel } from "@/lib/exportExcel";
-type Expense = {
-  name: string;
-  amount: number;
-  category: string;
-};
+"use client";
 
-type Props = {
-  expenses: Expense[];
-};
+interface Props{
+    transactions:number;
+    income:number;
+    expense:number;
+}
+
 export default function AnalyticsCard({
-  expenses,
-}: Props) {
-  const totalTransaction = expenses.length;
 
-  const totalExpense = expenses.reduce(
-    (sum, item) => sum + item.amount,
-    0
-  );
+    transactions,
+    income,
+    expense
 
-  const average =
-    totalTransaction === 0
-      ? 0
-      : totalExpense / totalTransaction;
+}:Props){
 
-  const highestExpense =
-    expenses.length > 0
-      ? expenses.reduce((a, b) =>
-          a.amount > b.amount ? a : b
-        )
-      : null;
+    const average=
+        transactions===0
+        ?0
+        :(income+expense)/transactions;
 
-  const categoryCount: Record<string, number> = {};
+    return(
 
-  expenses.forEach((item) => {
-    categoryCount[item.category] =
-      (categoryCount[item.category] || 0) +
-      item.amount;
-  });
+<div className="grid gap-5 md:grid-cols-4">
 
-  const topCategory =
-    Object.entries(categoryCount).sort(
-      (a, b) => b[1] - a[1]
-    )[0];
+<div className="rounded-3xl bg-white border p-6">
 
-  return (
-    <Card>
+<p className="text-gray-500">
+Transactions
+</p>
 
-      <h2 className="text-2xl font-bold">
-        Finance Analytics
-      </h2>
+<h2 className="mt-2 text-3xl font-bold">
+{transactions}
+</h2>
 
-      <div className="mt-6 grid gap-4">
+</div>
 
-        <div className="rounded-2xl bg-slate-100 p-5">
+<div className="rounded-3xl bg-white border p-6">
 
-          <p className="text-sm text-slate-500">
-            Total Transaction
-          </p>
+<p className="text-gray-500">
+Income
+</p>
 
-          <h2 className="mt-2 text-3xl font-black">
-            {totalTransaction}
-          </h2>
+<h2 className="mt-2 text-3xl font-bold text-green-600">
 
-        </div>
+Rp {income.toLocaleString()}
 
-        <div className="rounded-2xl bg-slate-100 p-5">
+</h2>
 
-          <p className="text-sm text-slate-500">
-            Average Expense
-          </p>
+</div>
 
-          <h2 className="mt-2 text-2xl font-black">
-            {formatCurrency(average)}
-          </h2>
+<div className="rounded-3xl bg-white border p-6">
 
-        </div>
+<p className="text-gray-500">
+Expense
+</p>
 
-        <div className="rounded-2xl bg-slate-100 p-5">
+<h2 className="mt-2 text-3xl font-bold text-red-600">
 
-          <p className="text-sm text-slate-500">
-            Highest Expense
-          </p>
+Rp {expense.toLocaleString()}
 
-          <h2 className="mt-2 text-xl font-bold">
-            {highestExpense
-              ? highestExpense.name
-              : "-"}
-          </h2>
+</h2>
 
-          <p className="mt-1 text-green-600 font-semibold">
-            {highestExpense
-              ? formatCurrency(
-                  highestExpense.amount
-                )
-              : "-"}
-          </p>
+</div>
 
-        </div>
+<div className="rounded-3xl bg-white border p-6">
 
-        <div className="rounded-2xl bg-slate-100 p-5">
+<p className="text-gray-500">
+Average
+</p>
 
-          <p className="text-sm text-slate-500">
-            Top Category
-          </p>
+<h2 className="mt-2 text-2xl font-bold">
 
-          <h2 className="mt-2 text-xl font-bold">
-            {topCategory
-              ? topCategory[0]
-              : "-"}
-          </h2>
+Rp {Math.round(average).toLocaleString()}
 
-        </div>
+</h2>
 
-      </div>
-    <Button
-        className="mt-6 w-full"
-        onClick={() =>
-            exportExpenseToExcel(expenses)
-        }
-        >
-        📊 Export Excel
-    </Button>
-    </Card>
-  );
+</div>
+
+</div>
+
+    )
+
 }

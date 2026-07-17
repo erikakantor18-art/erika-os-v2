@@ -1,295 +1,349 @@
 "use client";
-import AuthGuard from "@/components/AuthGuard";
-import { useState } from "react";
 
-import Sidebar from "@/components/layout/Sidebar";
-import Topbar from "@/components/layout/Topbar";
+import { useMemo, useState } from "react";
 
-import BudgetCard from "@/components/finance/BudgetCard";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import PageHeader from "@/components/common/PageHeader";
+import { exportTransactionsToExcel } from "@/lib/exportExcel";
 import SummaryCards from "@/components/finance/SummaryCards";
-import ExpenseForm from "@/components/finance/ExpenseForm";
-import ExpenseChart from "@/components/finance/ExpenseChart";
-import ExpenseHistory from "@/components/finance/ExpenseHistory";
-import SearchBar from "@/components/finance/SearchBar";
-import CategoryFilter from "@/components/finance/CategoryFilter";
-import MonthlySummary from "@/components/finance/MonthlySummary";
+import ExportButtons from "@/components/finance/ExportButtons";
+import SearchFilter from "@/components/finance/SearchFilter";
+import TransactionTable from "@/components/finance/TransactionTable";
+import TransactionModal from "@/components/finance/TransactionModal";
+import BudgetCard from "@/components/finance/BudgetCard";
+import SavingGoals from "@/components/finance/SavingGoals";
+import Charts from "@/components/finance/Charts";
+import AnalyticsCard from "@/components/finance/AnalyticsCard";
+import CashFlow from "@/components/finance/CashFlow";
+import Achievement from "@/components/finance/Achievement";
+import FinancialHealth from "@/components/finance/FinancialHealth";
+import BudgetModal from "@/components/finance/BudgetModal";
+import { useFinance } from "@/hooks/useFinance";
 
-import useExpense from "@/hooks/useExpense";
-import useProfile from "@/hooks/useProfile";
+import {
+  SavingGoal,
+  Transaction,
+  TransactionForm,
+} from "@/types/finance";
 
-import toast from "react-hot-toast";
-
-import { Expense } from "@/types";
-
-export default function Finance() {
-
+export default function FinancePage() {
   const {
-    profile,
-  } = useProfile();
+  transactions,
+  income,
+  expense,
+  balance,
+  budget,
 
-  const income =
-    profile?.monthly_income ?? 0;
+  addTransaction,
+  updateTransaction,
+  deleteTransaction,
 
-  const {
+  importTransactions,
 
-    expenses,
+  setBudget,
+} = useFinance();
 
-    loading,
+  const categories = [
+    "Food",
+    "Transport",
+    "Shopping",
+    "Entertainment",
+    "Bills",
+    "Education",
+    "Health",
+    "Salary",
+    "Investment",
+    "Other",
+  ];
 
-    totalExpense,
+  const [search, setSearch] = useState("");
 
-    addExpense,
+  const [filter, setFilter] = useState("All");
 
-    updateExpense,
+  const [openModal, setOpenModal] = useState(false);
+  const [openBudgetModal, setOpenBudgetModal] =
+  useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
 
-    deleteExpense,
+  const [form, setForm] = useState<TransactionForm>({
+    title: "",
+    amount: "",
+    category: categories[0],
+    type: "expense",
+    date: new Date().toISOString().slice(0, 10),
+  });
 
-  } = useExpense();
+  const [goals] = useState<SavingGoal[]>([
+    {
+      id: 1,
+      title: "Australia Fund",
+      target: 50000000,
+      current: 8000000,
+    },
+    {
+      id: 2,
+      title: "Emergency Fund",
+      target: 15000000,
+      current: 4000000,
+    },
+    {
+      id: 3,
+      title: "New Tablet",
+      target: 9000000,
+      current: 2500000,
+    },
+  ]);
 
-  const [expenseName, setExpenseName] =
-    useState("");
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((item) => {
+      const matchSearch =
+        item.title.toLowerCase().includes(search.toLowerCase()) ||
+        item.category.toLowerCase().includes(search.toLowerCase());
 
-  const [expenseAmount, setExpenseAmount] =
-    useState("");
+      const matchFilter =
+        filter === "All" ? true : item.category === filter;
 
-  const [category, setCategory] =
-    useState("Food");
+      return matchSearch && matchFilter;
+    });
+  }, [transactions, search, filter]);
 
-  const [search, setSearch] =
-    useState("");
+  const expenseChart = useMemo(() => {
+    const result: Record<string, number> = {};
 
-  const [filterCategory, setFilterCategory] =
-    useState("All");
+    transactions
+      .filter((item) => item.type === "expense")
+      .forEach((item) => {
+        result[item.category] =
+          (result[item.category] || 0) + item.amount;
+      });
 
-  const [editingId, setEditingId] =
-    useState<string | null>(null);
+    return Object.entries(result).map(([name, value]) => ({
+      name,
+      value,
+    }));
+  }, [transactions]);
 
-  const filteredExpenses =
-    expenses.filter((expense) => {
+  function resetForm() {
+    setEditId(null);
 
-      const matchName =
-        expense.name
-          .toLowerCase()
-          .includes(
-            search.toLowerCase()
-          );
+    setForm({
+      title: "",
+      amount: "",
+      category: categories[0],
+      type: "expense",
+      date: new Date().toISOString().slice(0, 10),
+    });
+  }
 
-      const matchCategory =
-        filterCategory === "All" ||
-        expense.category ===
-          filterCategory;
+  function openAddModal() {
+    resetForm();
+    setOpenModal(true);
+  }
 
-      return (
-        matchName &&
-        matchCategory
-      );
+  function closeModal() {
+    resetForm();
+    setOpenModal(false);
+  }
 
+  function editTransaction(item: Transaction) {
+    setEditId(item.id);
+
+    setForm({
+      title: item.title,
+      amount: item.amount.toString(),
+      category: item.category,
+      type: item.type,
+      date: item.date,
     });
 
-  async function handleSave() {
+    setOpenModal(true);
+  }
 
-    if (
-      !expenseName ||
-      !expenseAmount
-    )
-      return;
+  function saveTransaction() {
+    if (!form.title.trim()) return;
 
-    const expense: Expense = {
-
-      id:
-        editingId ??
-        crypto.randomUUID(),
-
-      name: expenseName,
-
-      amount: Number(
-        expenseAmount
-      ),
-
-      category,
-
-      createdAt:
-        new Date().toISOString(),
-
+    const data = {
+      title: form.title,
+      amount: Number(form.amount),
+      category: form.category,
+      type: form.type,
+      date: form.date,
     };
 
-    try {
+    if (editId !== null) {
+      updateTransaction(editId, data);
+    } else {
+      addTransaction(data);
+    }
 
-      if (editingId) {
+    closeModal();
+  }
 
-        await updateExpense(
-          expense
-        );
+  function exportExcel() {
+  exportTransactionsToExcel(
+    filteredTransactions
+  );
+}
 
-      } else {
-
-        await addExpense(
-          expense
-        );
-
+  function exportJSON() {
+    const blob = new Blob(
+      [JSON.stringify(transactions, null, 2)],
+      {
+        type: "application/json",
       }
+    );
 
-      setExpenseName("");
+    const url = URL.createObjectURL(blob);
 
-      setExpenseAmount("");
+    const a = document.createElement("a");
 
-      setCategory("Food");
+    a.href = url;
 
-      setEditingId(null);
+    a.download = "finance-backup.json";
 
-    } catch (error) {
+    a.click();
 
-      console.error(error);
-
-      toast.error(
-        "Failed to save expense"
-      );
-
-    }
-
+    URL.revokeObjectURL(url);
   }
 
-  function handleEdit(
-    id: string
-  ) {
+  function importJSON(
+  e: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = e.target.files?.[0];
 
-    const expense =
-      expenses.find(
-        (e) => e.id === id
-      );
+  if (!file) return;
 
-    if (!expense) return;
+  const reader = new FileReader();
 
-    setExpenseName(
-      expense.name
-    );
-
-    setExpenseAmount(
-      expense.amount.toString()
-    );
-
-    setCategory(
-      expense.category
-    );
-
-    setEditingId(
-      expense.id
-    );
-
-  }
-
-  async function handleDelete(
-    id: string
-  ) {
-
+  reader.onload = () => {
     try {
+      const data = JSON.parse(
+        reader.result as string
+      ) as Transaction[];
 
-      await deleteExpense(id);
+      importTransactions(data);
 
-    } catch (error) {
-
-      console.error(error);
-
-      toast.error(
-        "Delete failed"
-      );
-
+      alert("Restore berhasil.");
+    } catch {
+      alert("Format JSON tidak valid.");
     }
+  };
 
-  }
+  reader.readAsText(file);
+}
+    return (
+    <DashboardLayout title="Finance">
 
-  return (
-  <AuthGuard>
-    <main className="flex min-h-screen bg-slate-100">
+      <PageHeader
+        title="Finance Dashboard"
+        subtitle="Manage your income, expenses and savings."
+        buttonText="+ Add Transaction"
+        onClick={openAddModal}
+      />
 
-      <Sidebar />
+      <div className="mt-8 space-y-8">
 
-      <section className="flex-1 overflow-y-auto p-8">
-
-        <Topbar />
-
-        <div className="mt-8">
-
-          <SummaryCards
-            income={income}
-            expense={totalExpense}
-          />
-
-          <MonthlySummary
-            income={income}
-            expense={totalExpense}
-          />
-
-        </div>
-
-        <ExpenseForm
-          expenseName={expenseName}
-          expenseAmount={expenseAmount}
-          category={category}
-          setExpenseName={setExpenseName}
-          setExpenseAmount={setExpenseAmount}
-          setCategory={setCategory}
-          addExpense={handleSave}
+        <SummaryCards
+          income={income}
+          expense={expense}
+          balance={balance}
         />
 
-        <SearchBar
+        <ExportButtons
+          exportExcel={exportExcel}
+          exportJSON={exportJSON}
+          importJSON={importJSON}
+        />
+
+        <SearchFilter
           search={search}
           setSearch={setSearch}
+          filter={filter}
+          setFilter={setFilter}
+          categories={[
+            "All",
+            ...categories,
+          ]}
         />
 
-        <CategoryFilter
-          category={filterCategory}
-          setCategory={setFilterCategory}
+        <TransactionTable
+          transactions={filteredTransactions}
+          onEdit={editTransaction}
+          onDelete={deleteTransaction}
         />
 
-        {loading && (
+        <div className="grid gap-6 lg:grid-cols-2">
 
-          <div className="mt-6 rounded-2xl bg-blue-50 p-4 text-blue-700">
+          <BudgetCard
+            budget={budget.monthly}
+            expense={expense}
+            onEdit={() =>
+            setOpenBudgetModal(true)
+            } 
+          />
 
-            Loading...
+          <SavingGoals
+            goals={goals}
+          />
 
-          </div>
+        </div>
 
-        )}
+        <Charts
+          expenseChart={expenseChart}
+          income={income}
+          expense={expense}
+        />
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-3">
+        <AnalyticsCard
+          transactions={transactions.length}
+          income={income}
+          expense={expense}
+        />
 
-          <div className="space-y-8">
+        <div className="grid gap-6 lg:grid-cols-2">
 
-            <ExpenseChart
-              expenses={filteredExpenses}
-            />
+          <CashFlow
+            income={income}
+            expense={expense}
+            balance={balance}
+          />
 
-            <BudgetCard
-              budget={
-                profile?.monthly_budget ?? 0
-              }
-              expense={totalExpense}
-            />
-
-          </div>
-
-          <ExpenseHistory
-            expenses={filteredExpenses}
-            onDelete={(index) =>
-              handleDelete(
-                filteredExpenses[index].id
-              )
-            }
-            onEdit={(index) =>
-              handleEdit(
-                filteredExpenses[index].id
-              )
+          <Achievement
+            income={income}
+            expense={expense}
+            transactions={
+              transactions.length
             }
           />
 
         </div>
 
-      </section>
+        <FinancialHealth
+          income={income}
+          expense={expense}
+          balance={balance}
+        />
 
-    </main>
-    </AuthGuard>
+      </div>
 
+      <TransactionModal
+        open={openModal}
+        editId={editId}
+        form={form}
+        categories={categories}
+        setForm={setForm}
+        onClose={closeModal}
+        onSubmit={saveTransaction}
+      />
+      <BudgetModal
+        open={openBudgetModal}
+        currentBudget={budget.monthly}
+        onClose={() =>
+          setOpenBudgetModal(false)
+        }
+        onSave={setBudget}
+      />
+
+    </DashboardLayout>
   );
-
 }

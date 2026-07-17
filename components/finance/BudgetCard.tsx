@@ -1,113 +1,111 @@
 "use client";
 
-import Card from "@/components/ui/Card";
-import { formatCurrency } from "@/utils";
+import { AlertTriangle, Wallet } from "lucide-react";
 
-import {
-  Wallet,
-  TrendingUp,
-  CircleDollarSign,
-} from "lucide-react";
-
-type Props = {
+interface Props {
   budget: number;
   expense: number;
-};
+  onEdit: () => void;
+}
 
 export default function BudgetCard({
   budget,
   expense,
+  onEdit,
 }: Props) {
-
-  const safeBudget =
-    Math.max(budget, 0);
-
-  const percentage =
-    safeBudget === 0
+  const percent =
+    budget === 0
       ? 0
-      : Math.min(
-          (expense / safeBudget) * 100,
-          100
-        );
+      : Math.min((expense / budget) * 100, 100);
 
-  const remaining =
-    Math.max(
-      safeBudget - expense,
-      0
-    );
-
-  const status =
-    percentage < 60
-      ? "Safe"
-      : percentage < 90
-      ? "Warning"
-      : "Limit";
+  const remaining = budget - expense;
 
   const color =
-    percentage < 60
-      ? "bg-green-500"
-      : percentage < 90
+    percent >= 100
+      ? "bg-red-500"
+      : percent >= 80
       ? "bg-yellow-500"
-      : "bg-red-500";
+      : "bg-emerald-500";
 
   return (
-
-    <Card>
+    <div className="rounded-3xl border bg-white p-6 shadow-sm">
 
       <div className="flex items-center justify-between">
 
         <div>
 
-          <h2 className="text-2xl font-bold">
-
-            💰 Monthly Budget
-
+          <h2 className="text-xl font-bold">
+            Monthly Budget
           </h2>
 
-          <p className="mt-1 text-slate-500">
+          <p className="text-sm text-gray-500">
+            Control your spending
+          </p>
 
-            Budget from your Settings
+        </div>
+
+        <button
+          onClick={onEdit}
+          className="rounded-xl bg-black px-4 py-2 text-white hover:opacity-90"
+        >
+          Edit Budget
+        </button>
+
+      </div>
+
+      <div className="mt-8 flex items-center gap-4">
+
+        <div className="rounded-2xl bg-blue-100 p-4">
+
+          <Wallet
+            size={34}
+            className="text-blue-700"
+          />
+
+        </div>
+
+        <div>
+
+          <h3 className="text-3xl font-bold">
+
+            Rp {budget.toLocaleString()}
+
+          </h3>
+
+          <p className="text-gray-500">
+
+            Monthly Budget
 
           </p>
 
         </div>
 
-        <div
-          className={`rounded-2xl px-4 py-2 text-sm font-bold text-white ${color}`}
-        >
-
-          {status}
-
-        </div>
-
       </div>
-
-      {/* Progress */}
 
       <div className="mt-8">
 
-        <div className="mb-2 flex justify-between">
+        <div className="mb-3 flex justify-between">
 
-          <span className="text-sm text-slate-500">
+          <span>
 
-            Budget Used
+            Used Budget
 
           </span>
 
           <span className="font-bold">
 
-            {percentage.toFixed(0)}%
+            {percent.toFixed(1)}%
 
           </span>
 
         </div>
 
-        <div className="h-4 overflow-hidden rounded-full bg-slate-200">
+        <div className="h-4 overflow-hidden rounded-full bg-gray-200">
 
           <div
             className={`${color} h-full rounded-full transition-all duration-700`}
             style={{
-              width: `${percentage}%`,
+              width: `${percent}%`,
             }}
           />
 
@@ -115,119 +113,74 @@ export default function BudgetCard({
 
       </div>
 
-      {/* Budget Information */}
+      <div className="mt-6 grid grid-cols-2 gap-4">
 
-      <div className="mt-8 grid gap-4">
+        <div className="rounded-2xl bg-slate-50 p-4">
 
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4">
+          <p className="text-sm text-gray-500">
 
-          <div className="flex items-center gap-3">
+            Expense
 
-            <div className="rounded-xl bg-blue-100 p-3">
+          </p>
 
-              <Wallet
-                size={22}
-                className="text-blue-600"
-              />
+          <h3 className="mt-2 text-xl font-bold text-red-600">
 
-            </div>
+            Rp {expense.toLocaleString()}
 
-            <div>
-
-              <p className="text-sm text-slate-500">
-
-                Monthly Budget
-
-              </p>
-
-              <h3 className="font-bold">
-
-                {formatCurrency(
-                  safeBudget
-                )}
-
-              </h3>
-
-            </div>
-
-          </div>
+          </h3>
 
         </div>
 
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200 p-4">
+        <div className="rounded-2xl bg-slate-50 p-4">
 
-          <div className="flex items-center gap-3">
+          <p className="text-sm text-gray-500">
 
-            <div className="rounded-xl bg-red-100 p-3">
+            Remaining
 
-              <TrendingUp
-                size={22}
-                className="text-red-500"
-              />
+          </p>
 
-            </div>
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-
-                Total Expense
-
-              </p>
-
-              <h3 className="font-bold">
-
-                {formatCurrency(
-                  expense
-                )}
-
-              </h3>
-
-            </div>
-
-          </div>
-
-        </div>
-
-        <div className="flex items-center justify-between rounded-2xl border border-green-200 bg-green-50 p-4">
-
-          <div className="flex items-center gap-3">
-
-            <div className="rounded-xl bg-green-200 p-3">
-
-              <CircleDollarSign
-                size={22}
-                className="text-green-700"
-              />
-
-            </div>
-
-            <div>
-
-              <p className="text-sm text-slate-500">
-
-                Remaining Budget
-
-              </p>
-
-              <h3 className="font-bold text-green-700">
-
-                {formatCurrency(
-                  remaining
-                )}
-
-              </h3>
-
-            </div>
-
-          </div>
+          <h3
+            className={`mt-2 text-xl font-bold ${
+              remaining >= 0
+                ? "text-green-600"
+                : "text-red-600"
+            }`}
+          >
+            Rp {remaining.toLocaleString()}
+          </h3>
 
         </div>
 
       </div>
 
-    </Card>
+      {percent >= 80 && (
 
+        <div
+          className={`mt-6 rounded-2xl p-4 ${
+            percent >= 100
+              ? "bg-red-100 text-red-700"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+        >
+
+          <div className="flex items-center gap-3">
+
+            <AlertTriangle size={22} />
+
+            <span className="font-semibold">
+
+              {percent >= 100
+                ? "Budget exceeded!"
+                : "Warning! Budget usage is above 80%."}
+
+            </span>
+
+          </div>
+
+        </div>
+
+      )}
+
+    </div>
   );
-
 }

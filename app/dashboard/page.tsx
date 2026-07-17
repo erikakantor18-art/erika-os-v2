@@ -1,263 +1,255 @@
-"use client";
-import AuthGuard from "@/components/AuthGuard";
-import Sidebar from "@/components/layout/Sidebar";
-import Topbar from "@/components/layout/Topbar";
-import HeroBanner from "@/components/HeroBanner";
-
-import StatCard from "@/components/ui/StatCard";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import Card from "@/components/ui/Card";
-import CircleProgress from "@/components/ui/CircleProgress";
+import Progress from "@/components/ui/Progress";
+import Badge from "@/components/ui/Badge";
 
-import ExpenseOverview from "@/components/dashboard/ExpenseOverview";
-import ExpenseCategory from "@/components/dashboard/ExpenseCategory";
-import MonthlyTrend from "@/components/dashboard/MonthlyTrend";
-import RecentExpense from "@/components/dashboard/RecentExpense";
-import StudyOverview from "@/components/dashboard/StudyOverview";
-import PlannerToday from "@/components/dashboard/PlannerToday";
-import QuickAction from "@/components/dashboard/QuickAction";
-import AnalyticsCard from "@/components/dashboard/AnalyticsCard";
-import SmartInsight from "@/components/dashboard/SmartInsight";
-import CashflowCard from "@/components/dashboard/CashflowCard";
-import NetWorthCard from "@/components/dashboard/NetWorthCard";
-import SavingRateCard from "@/components/dashboard/SavingRateCard";
-import useExpense from "@/hooks/useExpense";
-import useGoal from "@/hooks/useGoal";
-import useProfile from "@/hooks/useProfile";
-import useIncome from "@/hooks/useIncome";
-import useStudy from "@/hooks/useStudy";
 import {
   Wallet,
-  CreditCard,
-  Landmark,
+  PiggyBank,
   Plane,
+  BookOpen,
+  TrendingUp,
+  CalendarDays,
+  CloudSun,
+  Quote,
 } from "lucide-react";
 
-export default function Dashboard() {
+const summary = [
+  {
+    title: "Balance",
+    value: "Rp 5.000.000",
+    icon: Wallet,
+  },
+  {
+    title: "Savings",
+    value: "Rp 2.300.000",
+    icon: PiggyBank,
+  },
+  {
+    title: "Australia Fund",
+    value: "Rp 1.500.000",
+    icon: Plane,
+  },
+  {
+    title: "Study",
+    value: "45%",
+    icon: BookOpen,
+  },
+];
 
-  /* ===========================
-     DATA
-  =========================== */
-  const {
-  studies,
-  } = useStudy();
-  const {
-    expenses,
-    totalExpense,
-  } = useExpense();
-
-  const {
-    goals,
-  } = useGoal();
-
-  const {
-    profile,
-  } = useProfile();
-
-  const {
-    totalIncome: extraIncome,
-  } = useIncome();
-
-  /* ===========================
-     FINANCE
-  =========================== */
-
-  const salary =
-    profile?.monthly_income ?? 0;
-
-  const income =
-    salary + extraIncome;
-
-  const expense =
-    totalExpense;
-
-  const balance =
-    income - expense;
-
-  /* ===========================
-    ✨ Dream Fun
-  =========================== */
-
-  const australia =
-    goals.find((goal) =>
-      goal.title
-        .toLowerCase()
-        .includes("australia")
-    );
-
-  const progress =
-    australia
-      ? Math.round(
-          (australia.current /
-            australia.target) *
-            100
-        )
-      : 0;
-
+export default function DashboardPage() {
   return (
-    <AuthGuard>
-    <main className="flex min-h-screen bg-slate-100">
+    <DashboardLayout>
+      {/* Summary */}
+      <div className="grid grid-cols-4 gap-6">
+        {summary.map((item) => {
+          const Icon = item.icon;
 
-      <Sidebar />
+          return (
+            <Card key={item.title}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500">{item.title}</p>
 
-      <section className="flex-1 overflow-y-auto p-8">
+                  <h2 className="mt-2 text-3xl font-black">
+                    {item.value}
+                  </h2>
+                </div>
 
-        <Topbar />
-
-        <HeroBanner />
-
-        {/* SUMMARY */}
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-
-          <StatCard
-            title="Income"
-            value={`Rp ${income.toLocaleString("id-ID")}`}
-            subtitle="Salary + Extra Income"
-            icon={<Wallet size={28} />}
-            color="green"
-          />
-
-          <StatCard
-            title="Expense"
-            value={`Rp ${expense.toLocaleString("id-ID")}`}
-            subtitle="Total Expense"
-            icon={<CreditCard size={28} />}
-            color="red"
-          />
-
-          <StatCard
-            title="Balance"
-            value={`Rp ${balance.toLocaleString("id-ID")}`}
-            subtitle="Available Balance"
-            icon={<Landmark size={28} />}
-            color="blue"
-          />
-
-          <StatCard
-            title="Australia"
-            value={`${progress}%`}
-            subtitle="Goal Progress"
-            icon={<Plane size={28} />}
-            color="yellow"
-          />
-
-        </div>
-
-        {/* DASHBOARD */}
-
-        <div className="mt-8 grid gap-6 xl:grid-cols-3">
-
-          {/* LEFT */}
-
-          <div className="space-y-6 xl:col-span-2">
-
-            <ExpenseOverview
-              expenses={expenses}
-            />
-
-            <ExpenseCategory
-              expenses={expenses}
-            />
-
-            <MonthlyTrend
-              expenses={expenses}
-            />
-
-            <RecentExpense
-              expenses={expenses}
-            />
-
-              <StudyOverview
-                studies={studies}
-              />
-
-          </div>
-
-          {/* RIGHT */}
-
-          <div className="space-y-6">
-
-            <Card>
-
-              <h2 className="text-center text-2xl font-black">
-
-                ✨ Dream Fun
-
-              </h2>
-
-              <div className="mt-8 flex justify-center">
-
-                <CircleProgress
-                  value={progress}
-                />
-
+                <div className="rounded-2xl bg-emerald-100 p-4">
+                  <Icon
+                    className="text-emerald-600"
+                    size={24}
+                  />
+                </div>
               </div>
-
-              <div className="mt-8 text-center">
-
-                <h3 className="text-xl font-bold">
-
-                  {australia?.title ??
-                    "Dream Fund"}
-
-                </h3>
-
-                <p className="mt-2 text-slate-500">
-
-                  Rp{" "}
-
-                  {(australia?.current ?? 0).toLocaleString("id-ID")}
-
-                  {" / "}
-
-                  Rp{" "}
-
-                  {(australia?.target ?? 0).toLocaleString("id-ID")}
-
-                </p>
-
-              </div>
-
             </Card>
+          );
+        })}
+      </div>
 
-            <SmartInsight
-              income={income}
-              expenses={expenses}
-              goal={australia}
-            />
+      {/* Middle */}
+      <div className="mt-8 grid grid-cols-3 gap-6">
+        {/* Expense */}
+        <Card className="col-span-2">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold">
+              Monthly Expense
+            </h3>
 
-            <NetWorthCard
-              cash={balance}
-              goals={goals}
-            />
-
-            <CashflowCard
-              income={income}
-              expense={expense}
-            />
-
-            <SavingRateCard
-              income={income}
-              expense={expense}
-            />
-
-            <AnalyticsCard
-              income={income}
-              expenses={expenses}
-            />
-
-            <PlannerToday />
-
-            <QuickAction />
-
+            <Badge color="blue">
+              July
+            </Badge>
           </div>
 
-        </div>
+          <div className="mt-10 flex h-72 items-end justify-between gap-4">
+            {[45, 70, 55, 90, 65, 80, 60].map(
+              (height, index) => (
+                <div
+                  key={index}
+                  className="flex flex-1 flex-col items-center"
+                >
+                  <div
+                    className="w-full rounded-xl bg-gradient-to-t from-emerald-500 to-green-300"
+                    style={{
+                      height: `${height}%`,
+                    }}
+                  />
 
-      </section>
+                  <span className="mt-3 text-sm text-slate-400">
+                    {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][index]}
+                  </span>
+                </div>
+              )
+            )}
+          </div>
+        </Card>
 
-    </main>
-  </AuthGuard>
+        {/* Dream */}
+        <Card>
+          <Badge>Dream Fun</Badge>
+
+          <h2 className="mt-4 text-2xl font-bold">
+            Australia 🇦🇺
+          </h2>
+
+          <p className="mt-2 text-slate-500">
+            Target 2029
+          </p>
+
+          <div className="mt-8">
+            <Progress
+              value={72}
+              showLabel
+              size="lg"
+            />
+          </div>
+
+          <div className="mt-8 space-y-3">
+            <div className="flex justify-between">
+              <span>Passport</span>
+
+              <span>✅</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>IELTS</span>
+
+              <span>🔄</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Visa</span>
+
+              <span>⬜</span>
+            </div>
+
+            <div className="flex justify-between">
+              <span>Flight</span>
+
+              <span>⬜</span>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Bottom */}
+      <div className="mt-8 grid grid-cols-3 gap-6">
+        <Card>
+          <div className="flex items-center gap-3">
+            <TrendingUp className="text-emerald-600" />
+
+            <h3 className="text-xl font-bold">
+              Recent Transactions
+            </h3>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            <Item
+              title="Coffee"
+              amount="-Rp 30.000"
+            />
+
+            <Item
+              title="Fuel"
+              amount="-Rp 100.000"
+            />
+
+            <Item
+              title="Salary"
+              amount="+Rp 4.700.000"
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3">
+            <CalendarDays className="text-blue-600" />
+
+            <h3 className="text-xl font-bold">
+              Today's Planner
+            </h3>
+          </div>
+
+          <div className="mt-6 space-y-4">
+            <Task text="Meeting Vendor" />
+            <Task text="Finish Dashboard UI" />
+            <Task text="Study IELTS" />
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3">
+            <CloudSun className="text-yellow-500" />
+
+            <h3 className="text-xl font-bold">
+              Daily Inspiration
+            </h3>
+          </div>
+
+          <Quote
+            className="mt-6 text-emerald-500"
+            size={32}
+          />
+
+          <p className="mt-4 leading-8 text-slate-600">
+            Small progress every day is still progress.
+            Stay consistent and your future self will thank you.
+          </p>
+        </Card>
+      </div>
+    </DashboardLayout>
   );
+}
 
+function Item({
+  title,
+  amount,
+}: {
+  title: string;
+  amount: string;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
+      <span>{title}</span>
+
+      <span className="font-semibold">
+        {amount}
+      </span>
+    </div>
+  );
+}
+
+function Task({
+  text,
+}: {
+  text: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4">
+      <div className="h-3 w-3 rounded-full bg-emerald-500" />
+
+      <span>{text}</span>
+    </div>
+  );
 }

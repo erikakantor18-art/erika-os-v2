@@ -71,7 +71,7 @@ export default function HeroBanner() {
 
   const quotes = [
 
-    "Every small saving today is bringing your Australia dream closer.",
+    "Every small saving today is bringing your Dream Fun closer.",
 
     "Discipline beats motivation.",
 

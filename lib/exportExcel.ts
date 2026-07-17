@@ -1,54 +1,31 @@
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+import { Transaction } from "@/types/finance";
 
-type Expense = {
-  name: string;
-  amount: number;
-  category: string;
-  createdAt?: string;
-};
-
-export function exportExpenseToExcel(
-  expenses: Expense[]
+export function exportTransactionsToExcel(
+  transactions: Transaction[]
 ) {
-  const rows = expenses.map((item) => ({
-    Name: item.name,
+  const data = transactions.map((item) => ({
+    Date: item.date,
+    Title: item.title,
     Category: item.category,
+    Type: item.type,
     Amount: item.amount,
-    Date: item.createdAt
-      ? new Date(item.createdAt).toLocaleDateString("id-ID")
-      : "-",
   }));
 
-  const worksheet =
-    XLSX.utils.json_to_sheet(rows);
+  const worksheet = XLSX.utils.json_to_sheet(data);
 
-  const workbook =
-    XLSX.utils.book_new();
+  const workbook = XLSX.utils.book_new();
 
   XLSX.utils.book_append_sheet(
     workbook,
     worksheet,
-    "Expenses"
+    "Transactions"
   );
 
-  const excelBuffer = XLSX.write(
+  XLSX.writeFile(
     workbook,
-    {
-      bookType: "xlsx",
-      type: "array",
-    }
-  );
-
-  const blob = new Blob(
-    [excelBuffer],
-    {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    }
-  );
-
-  saveAs(
-    blob,
-    `Finance_${new Date().toISOString().slice(0,10)}.xlsx`
+    `Finance-${
+      new Date().toISOString().split("T")[0]
+    }.xlsx`
   );
 }
